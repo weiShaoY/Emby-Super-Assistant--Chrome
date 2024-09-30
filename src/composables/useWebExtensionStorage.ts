@@ -13,7 +13,11 @@ import type { Storage } from 'webextension-polyfill'
 
 export type WebExtensionStorageOptions<T> = UseStorageAsyncOptions<T>
 
-// https://github.com/vueuse/vueuse/blob/658444bf9f8b96118dbd06eba411bb6639e24e88/packages/core/useStorage/guess.ts
+/**
+ * 根据传入的数据推测序列化类型
+ * @param rawInit - 初始数据
+ * @returns {string} 序列化类型
+ */
 export function guessSerializerType(rawInit: unknown) {
   return rawInit == null
     ? 'any'
@@ -35,14 +39,29 @@ export function guessSerializerType(rawInit: unknown) {
 }
 
 const storageInterface: StorageLikeAsync = {
+  /**
+   * 删除存储项
+   * @param key - 存储键
+   * @returns {Promise<void>}
+   */
   removeItem(key: string) {
     return storage.local.remove(key)
   },
 
+  /**
+   * 设置存储项
+   * @param key - 存储键
+   * @param value - 存储值
+   * @returns {Promise<void>}
+   */
   setItem(key: string, value: string) {
     return storage.local.set({ [key]: value })
   },
 
+  /**
+   * 获取存储项
+   * @param key - 存储键
+   */
   async getItem(key: string) {
     const storedData = await storage.local.get(key)
 
@@ -51,11 +70,11 @@ const storageInterface: StorageLikeAsync = {
 }
 
 /**
- * https://github.com/vueuse/vueuse/blob/658444bf9f8b96118dbd06eba411bb6639e24e88/packages/core/useStorageAsync/index.ts
- *
- * @param key
- * @param initialValue
- * @param options
+ * WebExtension 存储钩子，支持异步操作
+ * @param key - 存储的键
+ * @param initialValue - 初始值，可以是引用或 getter
+ * @param options - 存储配置项
+ * @returns {RemovableRef<T>} - 可移除的引用
  */
 export function useWebExtensionStorage<T>(
   key: string,
@@ -81,6 +100,9 @@ export function useWebExtensionStorage<T>(
   const data = (shallow ? shallowRef : ref)(initialValue) as Ref<T>
   const serializer = options.serializer ?? StorageSerializers[type]
 
+  /**
+   * 读取存储数据 @param event - 可选的存储事件，用于处理存储变更
+   */
   async function read(event?: { key: string, newValue: string | null }) {
     if (event && event.key !== key)
       return
@@ -111,6 +133,9 @@ export function useWebExtensionStorage<T>(
 
   void read()
 
+  /**
+   * 写入存储数据
+   */
   async function write() {
     try {
       await (

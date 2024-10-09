@@ -123,6 +123,11 @@ export async function getManifest() {
          * 注入的内容脚本
          */
         js: ['dist/contentScripts/index.global.js'],
+
+        /**
+         *  确保页面加载完成后再注入脚本
+         */
+        // run_at: 'document_idle',
       },
     ],
     web_accessible_resources: [

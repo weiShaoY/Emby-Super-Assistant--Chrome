@@ -8,25 +8,40 @@ import { isDev, log, port, r } from './utils' // 引入自定义工具函数和�
  * @returns {Promise<void>} - 异步函数无返回值
  */
 async function stubIndexHtml() {
-  const views = ['options', 'popup', 'sidepanel'] // 需要生成 stub 文件的视图列表
+  /**
+   * 需要生成 stub 文件的视图列表
+   */
+  const views = ['options', 'popup', 'sidepanel']
 
   for (const view of views) {
-    // 确保目标文件夹存在
+    /**
+     * 确保目标文件夹存在
+     */
     await fs.ensureDir(r(`extension/dist/${view}`))
 
-    // 读取源 index.html 文件内容
+    /**
+     * 读取源 index.html 文件内容
+     */
     let data = await fs.readFile(r(`src/${view}/index.html`), 'utf-8')
 
-    // 替换 main.ts 文件的路径为开发服务器地址
+    /**
+     * 替换 main.ts 文件的路径为开发服务器地址
+     */
     data = data
       .replace('"./main.ts"', `"http://localhost:${port}/${view}/main.ts"`)
-      // 替换开发服务器未启动时的提示
+      /**
+       * 替换开发服务器未启动时的提示
+       */
       .replace('<div id="app"></div>', '<div id="app">Vite server did not start</div>')
 
-    // 将修改后的内容写入到目标文件夹中的 index.html
+    /**
+     * 将修改后的内容写入到目标文件夹中的 index.html
+     */
     await fs.writeFile(r(`extension/dist/${view}/index.html`), data, 'utf-8')
 
-    // 记录日志，表示 stub 文件已生成
+    /**
+     * 记录日志，表示 stub 文件已生成
+     */
     log('PRE', `stub ${view}`)
   }
 }
@@ -39,29 +54,31 @@ function writeManifest() {
   execSync('npx esno ./scripts/manifest.ts', { stdio: 'inherit' }) // 使用 esno 执行 TypeScript 文件生成 manifest
 }
 
-// 初始化时生成 manifest 文件
+/**
+ * 初始化时生成 manifest 文件
+ */
 writeManifest()
 
 // 如果处于开发模式，则开始监视文件变化
 if (isDev) {
-  // 生成 stub index.html 文件
+  /**
+   * 生成 stub index.html 文件
+   */
   stubIndexHtml()
 
-  // 监视 src 目录下的所有 HTML 文件，如果有改动，则重新生成 stub 文件
+  /**
+   * 监视 src 目录下的所有 HTML 文件，如果有改动，则重新生成 stub 文件
+   */
   chokidar.watch(r('src/**/*.html'))
     .on('change', () => {
       stubIndexHtml()
     })
 
-  // 监视 manifest.ts 和 package.json 文件的变化，发生改动时重新生成 manifest 文件
+  /**
+   * 监视 manifest.ts 和 package.json 文件的变化，发生改动时重新生成 manifest 文件
+   */
   chokidar.watch([r('src/manifest.ts'), r('package.json')])
     .on('change', () => {
       writeManifest()
     })
-
-  // 监视 src/contentScripts 目录下的所有的文件，并发生改动时重新加载内容脚本
-  // chokidar.watch(r('src/contentScripts/view/**/*'))
-  //   .on('change', () => {
-  //     // import('src/contentScripts/index')
-  //   })
 }

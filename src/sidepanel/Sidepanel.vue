@@ -14,7 +14,7 @@ function openOptionsPage() {
     <a-input />
 
     <button class="btn mt-2" @click="openOptionsPage">
-      打开选项页啊11
+      打开选项页
     </button>
     <div class="mt-2">
       <span class="opacity-50">Storage:</span> {{ storageDemo }}

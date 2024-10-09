@@ -23,9 +23,14 @@ import 'uno.css'
       class="flex w-10 h-10 rounded-full shadow cursor-pointer border-none"
       bg="teal-600 hover:teal-700"
     >
-      <pixelarticons-power class="block m-auto text-white text-lg" />
-
-      按钮43
+      按
     </button>
   </div>
+
+  <Teleport
+    to=".el-row"
+  >
+    测试挂载1111111111111
+    测试挂载1111111111111
+  </Teleport>
 </template>
